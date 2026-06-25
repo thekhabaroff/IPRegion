@@ -31,7 +31,7 @@
 Сделайте файл исполняемым и запустите его:
 
 ```bash
-sudo curl -fsSL https://raw.githubusercontent.com/thekhabaroff/IPRegion/main/ipregion.sh -o /usr/local/bin/ipregion && sudo chmod 755 /usr/local/bin/ipregion && ipregion
+sudo curl -fsSL https://raw.githubusercontent.com/thekhabaroff/IPRegion/master/ipregion.sh -o /usr/local/bin/ipregion && sudo chmod 755 /usr/local/bin/ipregion && ipregion
 ```
 
 ```bash
