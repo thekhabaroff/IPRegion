@@ -8,6 +8,8 @@ SPINNER_SERVICE_FILE=$(mktemp "${TMPDIR:-/tmp}/ipregion_spinner_XXXXXX")
 SPOTIFY_API_KEY="142b583129b2df829de3656f9eb484e6"
 SPOTIFY_CLIENT_ID="9a8d2f0ce77a4e248bb71fefcb557637"
 NETFLIX_API_KEY="YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm"
+DISNEY_PLUS_API_KEY="ZGlzbmV5JmFuZHJvaWQmMS4wLjA.bkeb0m230uUhv8qrAXuNu39tbE_mD5EEhM_NAcohjyA"
+DISNEY_PLUS_JSON_BODY='{"query":"\n     mutation registerDevice($registerDevice: RegisterDeviceInput!) {\n       registerDevice(registerDevice: $registerDevice) {\n         __typename\n       }\n     }\n     ","variables":{"registerDevice":{"applicationRuntime":"android","attributes":{"operatingSystem":"Android","operatingSystemVersion":"13"},"deviceFamily":"android","deviceLanguage":"en","deviceProfile":"phone","devicePlatformId":"android"}},"operationName":"registerDevice"}'
 
 VERBOSE=false
 JSON_OUTPUT=false
@@ -25,13 +27,13 @@ ARR_CUSTOM=()
 ARR_CDN=()
 
 COLOR_HEADER="1;36"
-COLOR_SERVICE="0;92"
+COLOR_SERVICE="1;92"
 COLOR_HEART="1;31"
 COLOR_URL="1;90"
 COLOR_ASN="1;33"
 COLOR_TABLE_HEADER="1;97"
 COLOR_TABLE_VALUE="1"
-COLOR_NULL="0;90"
+COLOR_NULL="1;90"
 COLOR_ERROR="1;31"
 COLOR_WARN="1;33"
 COLOR_INFO="1;36"
@@ -321,25 +323,31 @@ declare -A PRIMARY_SERVICES=(
   [IPWHO_IS]="ipwho.is|ipwho.is|/{ip}"
   [IPAPI_COM]="ip-api.com|demo.ip-api.com|/json/{ip}?fields=countryCode"
   [2IP]="2ip.io|api.2ip.io"
+  [IFCONFIG_CO]="ifconfig.co|ifconfig.co|/country-iso?ip={ip}|plain"
+  [IP2LOCATION_IO]="ip2location.io|api.ip2location.io|/?ip={ip}"
+  [IPIZ_NET]="ip.iz.net|api.ipiz.net|/{ip}"
 )
 
 PRIMARY_SERVICES_ORDER=(
-  "MAXMIND"
-  "RIPE"
-  "IPINFO_IO"
+  "2IP"
   "CLOUDFLARE"
-  "IPREGISTRY"
-  "IPAPI_CO"
-  "IPLOCATION_COM"
   "COUNTRY_IS"
   "GEOAPIFY_COM"
   "GEOJS_IO"
+  "IFCONFIG_CO"
+  "IP2LOCATION_IO"
+  "IPAPI_CO"
   "IPAPI_IS"
   "IPBASE_COM"
+  "IPINFO_IO"
+  "IPIZ_NET"
+  "IPLOCATION_COM"
   "IPQUERY_IO"
+  "IPREGISTRY"
   "IPWHO_IS"
   "IPAPI_COM"
-  "2IP"
+  "MAXMIND"
+  "RIPE"
 )
 
 declare -A PRIMARY_SERVICES_CUSTOM_HANDLERS=(
@@ -356,51 +364,56 @@ declare -A SERVICE_HEADERS=(
 
 declare -A CUSTOM_SERVICES=(
   [GOOGLE]="Google"
-  [GOOGLE_SEARCH_CAPTCHA]="Google Search Captcha"
   [YOUTUBE]="YouTube"
-  [YOUTUBE_PREMIUM]="YouTube Premium"
   [YOUTUBE_MUSIC]="YouTube Music"
-  [TWITCH]="Twitch"
-  [CHATGPT]="ChatGPT"
-  [NETFLIX]="Netflix"
-  [SPOTIFY]="Spotify"
-  [SPOTIFY_SIGNUP]="Spotify Signup"
-  [DEEZER]="Deezer"
-  [REDDIT]="Reddit"
-  [REDDIT_GUEST_ACCESS]="Reddit (Guest Access)"
+  [YOUTUBE_PREMIUM]="YouTube Premium"
+  [GEMINI_SUPPORTED]="Gemini Supported"
+  [GOOGLE_SEARCH_CAPTCHA]="Google Search Captcha"
   [AMAZON_PRIME]="Amazon Prime"
   [APPLE]="Apple"
-  [STEAM]="Steam"
-  [PLAYSTATION]="PlayStation"
-  [TIKTOK]="Tiktok"
-  [YOUTUBE_CDN]="YouTube CDN"
-  [OOKLA_SPEEDTEST]="Ookla Speedtest"
+  [CHATGPT]="ChatGPT"
+  [DEEZER]="Deezer"
+  [DISNEY_PLUS]="Disney+"
+  [DISNEY_PLUS_ACCESS]="Disney+ Access"
   [JETBRAINS]="JetBrains"
-  [BING]="Microsoft (Bing)"
+  [MICROSOFT]="Microsoft"
+  [NETFLIX]="Netflix"
+  [OOKLA_SPEEDTEST]="Ookla Speedtest"
+  [PLAYSTATION]="PlayStation"
+  [REDDIT]="Reddit"
+  [REDDIT_GUEST_ACCESS]="Reddit (Guest Access)"
+  [SPOTIFY]="Spotify"
+  [SPOTIFY_SIGNUP]="Spotify Signup"
+  [STEAM]="Steam"
+  [TIKTOK]="Tiktok"
+  [TWITCH]="Twitch"
 )
 
 CUSTOM_SERVICES_ORDER=(
   "GOOGLE"
-  "GOOGLE_SEARCH_CAPTCHA"
   "YOUTUBE"
-  "YOUTUBE_PREMIUM"
   "YOUTUBE_MUSIC"
-  "TWITCH"
-  "CHATGPT"
-  "NETFLIX"
-  "SPOTIFY"
-  "SPOTIFY_SIGNUP"
-  "DEEZER"
-  "REDDIT"
-  "REDDIT_GUEST_ACCESS"
+  "YOUTUBE_PREMIUM"
+  "GEMINI_SUPPORTED"
+  "GOOGLE_SEARCH_CAPTCHA"
   "AMAZON_PRIME"
   "APPLE"
-  "STEAM"
-  "PLAYSTATION"
-  "TIKTOK"
-  "OOKLA_SPEEDTEST"
+  "CHATGPT"
+  "DEEZER"
+  "DISNEY_PLUS"
+  "DISNEY_PLUS_ACCESS"
   "JETBRAINS"
-  "BING"
+  "MICROSOFT"
+  "NETFLIX"
+  "OOKLA_SPEEDTEST"
+  "PLAYSTATION"
+  "REDDIT"
+  "REDDIT_GUEST_ACCESS"
+  "SPOTIFY"
+  "SPOTIFY_SIGNUP"
+  "STEAM"
+  "TIKTOK"
+  "TWITCH"
 )
 
 declare -A CUSTOM_SERVICES_HANDLERS=(
@@ -427,7 +440,10 @@ declare -A CUSTOM_SERVICES_HANDLERS=(
   [NETFLIX_CDN]="lookup_netflix_cdn"
   [OOKLA_SPEEDTEST]="lookup_ookla_speedtest"
   [JETBRAINS]="lookup_jetbrains"
-  [BING]="lookup_bing"
+  [GEMINI_SUPPORTED]="lookup_gemini_supported"
+  [DISNEY_PLUS]="lookup_disney_plus"
+  [DISNEY_PLUS_ACCESS]="lookup_disney_plus_access"
+  [MICROSOFT]="lookup_microsoft"
 )
 
 declare -A CDN_SERVICES=(
@@ -1185,6 +1201,12 @@ process_response() {
     IPAPI_COM)
       jq_filter='.countryCode'
       ;;
+    IP2LOCATION_IO)
+      jq_filter='.country_code'
+      ;;
+    IPIZ_NET)
+      jq_filter='.country_code'
+      ;;
     *)
       echo "$response"
       ;;
@@ -1448,44 +1470,36 @@ print_table_group() {
     local show_ipv4=0
     local show_ipv6=0
     local separator=$'\t'
-    local col_width=32
 
     [[ "$IPV6_ONLY" != true && -n "$EXTERNAL_IPV4" ]] && show_ipv4=1
     [[ "$IPV4_ONLY" != true && -n "$EXTERNAL_IPV6" ]] && show_ipv6=1
-	
-	if [[ "$group_title" != "GeoIP services" ]]; then
-		#printf "%s\n\n" "$(color HEADER "$group_title")"
-		printf "%-${col_width}s" "$(color TABLE_HEADER 'Service')"
-	fi
 
-    if [[ "$group_title" != "GeoIP services" ]]; then
-        [[ $show_ipv4 -eq 1 ]] && printf "%s%s" "$separator" "$(color TABLE_HEADER 'IPv4')"
-        [[ $show_ipv6 -eq 1 ]] && printf "%s%s" "$separator" "$(color TABLE_HEADER 'IPv6')"
-    fi
-    printf "\n"
+    printf "%s\n" "$(color HEADER "$group_title")"
 
-    jq -r --arg group "$group" '
-        (.results // {}) as $r
-        | ($r[$group] // [])
-        | .[]
-        | [ .service, (.ipv4 // "N/A"), (.ipv6 // "N/A") ]
-        | @tsv
-    ' <<<"$RESULT_JSON" | while IFS=$'\t' read -r s v4 v6; do
+    {
+      jq -r --arg group "$group" '
+          (.results // {}) as $r
+          | ($r[$group] // [])
+          | .[]
+          | [ .service, (.ipv4 // "N/A"), (.ipv6 // "N/A") ]
+          | @tsv
+      ' <<<"$RESULT_JSON" | while IFS=$'\t' read -r s v4 v6; do
 
-        printf "%-${col_width}s" "$(color SERVICE "$s")"
+          printf "%s" "$(color SERVICE "$s")"
 
-		if [[ $show_ipv4 -eq 1 ]]; then
-			[[ "$v4" == "null" || -z "$v4" ]] && v4="$na"
-			printf "%s%s" "$separator" "$(format_value "$v4" "$na")"
-		fi
+          if [[ $show_ipv4 -eq 1 ]]; then
+              [[ "$v4" == "null" || -z "$v4" ]] && v4="$na"
+              printf "%s%s" "$separator" "$(format_value "$v4" "$na")"
+          fi
 
-		if [[ $show_ipv6 -eq 1 ]]; then
-			[[ "$v6" == "null" || -z "$v6" ]] && v6="$na"
-			printf "%s%s" "$separator" "$(format_value "$v6" "$na")"
-		fi
+          if [[ $show_ipv6 -eq 1 ]]; then
+              [[ "$v6" == "null" || -z "$v6" ]] && v6="$na"
+              printf "%s%s" "$separator" "$(format_value "$v6" "$na")"
+          fi
 
-        printf "\n"
-    done
+          printf "\n"
+      done
+    } | column -t -s "$separator"
 }
 
 
@@ -1511,7 +1525,7 @@ print_header() {
 print_legend() {
   local separator="|||"
   echo
-  printf "%s\n\n" "$(color HEADER 'Legend')"
+  printf "%s\n" "$(color HEADER 'RESULT:')"
 
   local stats
   stats=$(jq -r '
@@ -1571,6 +1585,7 @@ print_legend() {
     echo "$header"
 
     while read -r code; do
+      [[ -z "$code" ]] && continue
       local country ipv4_num ipv6_num ipv4_str ipv6_str
       country="${COUNTRY_NAMES[$code]:-Unknown}"
 
@@ -1588,8 +1603,8 @@ print_legend() {
 
       ipv4_str=""
       ipv6_str=""
-      [[ "$ipv4_num" -ne 0 ]] && ipv4_str="${ipv4_num}%"
-      [[ "$ipv6_num" -ne 0 ]] && ipv6_str="${ipv6_num}%"
+      [[ "$ipv4_num" -ne 0 ]] && ipv4_str="$(bold "${ipv4_num}%")"
+      [[ "$ipv6_num" -ne 0 ]] && ipv6_str="$(bold "${ipv6_num}%")"
 
       printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
         "$ipv4_num" "$ipv6_num" "$(color SERVICE "$code")" "$(format_value "$country" "$country")" "$ipv4_str" "$ipv6_str"
@@ -1623,20 +1638,20 @@ print_results() {
 
   case "$GROUPS_TO_SHOW" in
     primary)
-      print_table_group "primary" "GeoIP services"
+      print_table_group "primary" "GEO:"
       ;;
     custom)
-      print_table_group "custom" "Popular services"
+      print_table_group "custom" "SERVICES:"
       ;;
     cdn)
-      print_table_group "cdn" "CDN services"
+      print_table_group "cdn" "CDN:"
       ;;
     *)
-      print_table_group "custom" "Popular services"
+      print_table_group "custom" "SERVICES:"
       printf "\n"
-      print_table_group "cdn" "CDN services"
+      print_table_group "cdn" "CDN:"
       printf "\n"
-      print_table_group "primary" "GeoIP services"
+      print_table_group "primary" "GEO:"
       printf "\n"
       print_legend
       ;;
@@ -1977,44 +1992,80 @@ lookup_google_search_captcha() {
   print_value_or_colored "$is_captcha" "$color_name"
 }
 
-lookup_bing() {
+lookup_microsoft() {
   local ip_version="$1"
-  local curl_ip_flag country
-  if [[ "$ip_version" == "4" ]]; then
-	  curl_ip_flag="-4"
-  elif [[ "$ip_version" == "6" ]]; then
-	  curl_ip_flag="-6"
+  local response
+
+  response=$(make_request GET "https://login.live.com" --ip-version "$ip_version" --user-agent "$USER_AGENT")
+  echo "$response" | grep -oP '"sRequestCountry":"\K[^"]*' | head -n1
+}
+
+lookup_gemini_supported() {
+  local ip_version="$1"
+  local country_code country_name available color_name regions_md
+  local gemini_regions_url="https://ai.google.dev/gemini-api/docs/available-regions.md.txt"
+
+  country_code=$(lookup_google "$ip_version")
+
+  if [[ -z "$country_code" ]]; then
+    echo ""
+    return
+  fi
+
+  country_name=$(make_request GET "https://www.apicountries.com/alpha/${country_code}" --ip-version "4")
+  country_name=$(process_json "$country_name" ".name")
+
+  if [[ -z "$country_name" || "$country_name" == "null" ]]; then
+    echo ""
+    return
+  fi
+
+  regions_md=$(make_request GET "$gemini_regions_url" --ip-version "$ip_version")
+
+  if grep -qi "^- ${country_name}$" <<<"$regions_md"; then
+    available="Yes"
+    color_name="SERVICE"
   else
-	  curl_ip_flag="-4"
+    available="No"
+    color_name="HEART"
   fi
 
-  curl_args=()
+  print_value_or_colored "$available" "$color_name"
+}
 
-  if [[ -n "$PROXY_ADDR" ]]; then
-    curl_args+=(--proxy "socks5://$PROXY_ADDR")
+lookup_disney_plus() {
+  local ip_version="$1"
+  local response
+
+  response=$(make_request POST "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" \
+    --header "Authorization: Bearer $DISNEY_PLUS_API_KEY" \
+    --json "$DISNEY_PLUS_JSON_BODY" \
+    --ip-version "$ip_version")
+
+  process_json "$response" ".extensions.sdk.session.location.countryCode"
+}
+
+lookup_disney_plus_access() {
+  local ip_version="$1"
+  local response errors_count in_supported_location is_available color_name
+
+  response=$(make_request POST "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql" \
+    --header "Authorization: Bearer $DISNEY_PLUS_API_KEY" \
+    --json "$DISNEY_PLUS_JSON_BODY" \
+    --ip-version "$ip_version")
+
+  errors_count=$(process_json "$response" ".errors | length")
+  in_supported_location=$(process_json "$response" ".extensions.sdk.session.inSupportedLocation")
+
+  if [[ "$errors_count" == "0" && "$in_supported_location" == "true" ]]; then
+    is_available="Yes"
+    color_name="SERVICE"
+  else
+    is_available="No"
+    color_name="HEART"
   fi
 
-  if [[ -n "$INTERFACE_NAME" ]]; then
-    curl_args+=(--interface "$INTERFACE_NAME")
-  fi
-	  
-  local tmpresult=$(timeout "$CURL_TIMEOUT" curl $SELECTED_DOH_URL -sL $curl_ip_flag "${curl_args[@]}" "https://www.bing.com/search?q=cats" --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
-  
-  local isCN=$(echo "$tmpresult" | grep 'cn.bing.com')
-  local region=$(echo "$tmpresult" | grep -woP 'Region\s{0,}:\s{0,}"\K[^"]+')
-  
-  if [ -n "$isCN" ]; then
-    region='CN'
-  fi
-  
-  region="${region:0:2}"
-  
-  if [[ "$region" == "WW" ]]; then
-	tmpresult=$(timeout "$CURL_TIMEOUT" curl $SELECTED_DOH_URL -s "https://login.live.com" $curl_ip_flag "${curl_args[@]}" --user-agent "$USER_AGENT")
-	region=$(echo "$tmpresult" | grep -oP '"sRequestCountry":"\K[^"]*' | head -n1)
-  fi
-
-  echo "$region"
+  print_value_or_colored "$is_available" "$color_name"
 }
 
 lookup_spotify_signup() {
