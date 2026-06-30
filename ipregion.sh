@@ -714,7 +714,13 @@ is_valid_json() {
 process_json() {
   local json="$1"
   local jq_filter="$2"
-  jq -r "$jq_filter" <<<"$json"
+
+  if [[ -z "$json" ]] || ! is_valid_json "$json"; then
+    echo ""
+    return
+  fi
+
+  jq -r "$jq_filter" <<<"$json" 2>/dev/null
 }
 
 format_value() {
@@ -925,6 +931,24 @@ get_asn() {
   fi
 }
 
+get_registered_country() {
+  local ip_version="$1"
+  local response country
+
+  response=$(make_request GET "https://geoip.maxmind.com/geoip/v2.1/city/me" \
+    --header "Referer: https://www.maxmind.com" \
+    --ip-version "$ip_version")
+
+  country=$(process_json "$response" ".registered_country.names.en")
+
+  if [[ -z "$country" || "$country" == "null" ]]; then
+    echo "N/A"
+    return
+  fi
+
+  echo "$country"
+}
+
 get_iata_location() {
   local iata_code="$1"
   local url="https://www.air-port-codes.com/api/v1/single"
@@ -1002,7 +1026,7 @@ make_request() {
   shift 2
   local ip_version user_agent json data headers response_with_code response http_code
   local curl_args=(
-    --silent --compressed
+    --silent --compressed --location
     --retry-connrefused --retry-all-errors
     --retry "$CURL_RETRIES"
     --connect-timeout "$CURL_TIMEOUT"
@@ -1512,11 +1536,11 @@ print_header() {
   printf "%s\n%s\n\n" "$(color URL "IPRegion")" "$(color URL "$SCRIPT_URL")"
 
   if [[ -n "$EXTERNAL_IPV4" ]]; then
-    printf "%s: %s\n" "$(color HEADER 'IPv4')" "$(bold "$(mask_ipv4 "$ipv4")")"
+    printf "%s: %s, %s %s\n" "$(color HEADER 'IPv4')" "$(bold "$(mask_ipv4 "$ipv4")")" "$(bold 'registered in')" "$(bold "$(get_registered_country 4)")"
   fi
 
   if [[ -n "$EXTERNAL_IPV6" ]]; then
-    printf "%s: %s\n" "$(color HEADER 'IPv6')" "$(bold "$(mask_ipv6 "$ipv6")")"
+    printf "%s: %s, %s %s\n" "$(color HEADER 'IPv6')" "$(bold "$(mask_ipv6 "$ipv6")")" "$(bold 'registered in')" "$(bold "$(get_registered_country 6)")"
   fi
 
   printf "%s: %s\n\n" "$(color HEADER 'ASN')" "$(bold "AS$asn $asn_name")"
@@ -2002,7 +2026,7 @@ lookup_microsoft() {
 
 lookup_gemini_supported() {
   local ip_version="$1"
-  local country_code country_name available color_name regions_md
+  local country_code country_name available color_name regions_md name
   local gemini_regions_url="https://ai.google.dev/gemini-api/docs/available-regions.md.txt"
 
   country_code=$(lookup_google "$ip_version")
@@ -2012,8 +2036,10 @@ lookup_gemini_supported() {
     return
   fi
 
-  country_name=$(make_request GET "https://www.apicountries.com/alpha/${country_code}" --ip-version "4")
-  country_name=$(process_json "$country_name" ".name")
+  local country_json country_native
+  country_json=$(make_request GET "https://www.apicountries.com/alpha/${country_code}" --ip-version "4")
+  country_name=$(process_json "$country_json" ".name")
+  country_native=$(process_json "$country_json" ".nativeName")
 
   if [[ -z "$country_name" || "$country_name" == "null" ]]; then
     echo ""
@@ -2022,13 +2048,15 @@ lookup_gemini_supported() {
 
   regions_md=$(make_request GET "$gemini_regions_url" --ip-version "$ip_version")
 
-  if grep -qi "^- ${country_name}$" <<<"$regions_md"; then
-    available="Yes"
-    color_name="SERVICE"
-  else
-    available="No"
-    color_name="HEART"
-  fi
+  available="No"
+  color_name="HEART"
+  for name in "$country_name" "$country_native"; do
+    if [[ -n "$name" && "$name" != "null" ]] && grep -qi "^- ${name}$" <<<"$regions_md"; then
+      available="Yes"
+      color_name="SERVICE"
+      break
+    fi
+  done
 
   print_value_or_colored "$available" "$color_name"
 }
