@@ -5,7 +5,7 @@
 ## Возможности
 
 - Проверка через GeoIP-сервисы: MaxMind, RIPE, ipinfo, ipregistry, ipapi, Cloudflare, ipquery, ipwho.is и другие.[3]
-- Проверка через популярные сервисы: Google, YouTube, Twitch, ChatGPT, Netflix, Spotify, Reddit, Amazon Prime, Apple, Steam, PlayStation, TikTok, Bing.[3]
+- Проверка через популярные сервисы: Google, YouTube, YouTube Music, YouTube Premium, Gemini, ChatGPT, Netflix, Spotify, Deezer, Disney+, Reddit, Amazon Prime, Apple, Steam, PlayStation, TikTok, Twitch, JetBrains, Microsoft, Ookla Speedtest.[3]
 - Проверка CDN-маршрутизации: Cloudflare CDN, YouTube CDN, Netflix CDN.[3]
 - Поддержка IPv4 и IPv6.[3]
 - Вывод в JSON.[3]
@@ -31,7 +31,7 @@
 Сделайте файл исполняемым и запустите его:
 
 ```bash
-sudo curl -fsSL https://raw.githubusercontent.com/thekhabaroff/IPRegion/master/ipregion.sh -o /usr/local/bin/ipregion && sudo chmod 755 /usr/local/bin/ipregion && ipregion
+sudo curl -fsSL https://raw.githubusercontent.com/thekhabaroff/IPRegion/devin/1782408304-merge-ipregion-scripts/ipregion.sh -o /usr/local/bin/ipregion && sudo chmod 755 /usr/local/bin/ipregion && ipregion
 ```
 
 ```bash
@@ -79,32 +79,43 @@ chmod +x ipregion.sh
 
 Скрипт может выводить до трёх логических блоков:[3]
 
-- `Popular services` — как ваш IP/регион видят крупные сервисы.[3]
-- `CDN services` — через какие CDN-узлы и страны проходит доставка контента.[3]
-- `GeoIP services` — что возвращают классические IP geolocation API и базы.[3]
+- `SERVICES:` — как ваш IP/регион видят крупные сервисы.[3]
+- `CDN:` — через какие CDN-узлы и страны проходит доставка контента.[3]
+- `GEO:` — что возвращают классические IP geolocation API и базы.[3]
 
-В конце выводится `Legend` с процентным распределением стран по IPv4/IPv6 среди результатов сервисов.[3]
+В конце выводится `RESULT:` с процентным распределением стран по IPv4/IPv6 среди результатов сервисов.[3]
+
+Весь текст вывода печатается жирным шрифтом.
 
 ## Пример вывода
 
 ```text
-ipregion.sh v1.0.0
-https://github.com/Davoyan/ipregion
+IPRegion
+https://github.com/thekhabaroff/IPRegion
 
-IPv4: 217.177.*.*
-ASN: AS50053 Anton Levin
+IPv4: 100.23.*.*
+ASN: AS16509 Amazon.com, Inc.
 
-Popular services
-Service                 |IPv4
-Google                  |KG
-Netflix                 |LV
+SERVICES:
+Google                 US
+YouTube                US
+Netflix                US
 ...
 
-CDN services
-Service                 |IPv4
-Cloudflare CDN          |DE (FRA)
-YouTube CDN             |DE (FRA)
-Netflix CDN             |LV
+CDN:
+Cloudflare CDN  US (PDX)
+YouTube CDN     US (SEA)
+Netflix CDN     US
+
+GEO:
+2ip.io            US
+cloudflare.com    US
+ip.iz.net         US
+...
+
+RESULT:
+Code      Country            % IPv4
+US        United States      100%
 ```
 
 ## CI / Lint
